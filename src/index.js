@@ -56,7 +56,9 @@ app.post("/todos", checksExistsUserAccountMiddleware, (request, response) => {
   const { userToken } = request;
   const id = uuiDv4();
 
-  const toDoAlreadyExists = userToken.todos.some(
+  const indexOfUser = users.findIndex(user => user.id === userToken.id)
+
+  const toDoAlreadyExists = userToken.todos.findIndex(
     (to_do) => to_do.title === title
   );
 
@@ -74,7 +76,7 @@ app.post("/todos", checksExistsUserAccountMiddleware, (request, response) => {
     create_at: new Date(),
   };
 
-  userToken.todos.push(toDoEntity);
+  users[indexOfUser].todos.push(toDoEntity);
 
   return response.status(201).json(toDoEntity);
 });
@@ -87,14 +89,16 @@ app.put(
     const { id } = request.params;
     const { title, deadline } = request.body;
 
+    const indexOfUser = users.findIndex(user => user.id === userToken.id)
+
     const indexOfToDo = userToken.todos.findIndex((toDo) => toDo.id === id);
 
     if (indexOfToDo === -1) {
       return response.status(404).json({ error: "To-do list not found!" });
     }
 
-    userToken.todos[indexOfToDo].title = title;
-    userToken.todos[indexOfToDo].deadline = new Date(deadline);
+    users[indexOfUser].todos[indexOfToDo].title = title;
+    users[indexOfUser].todos[indexOfToDo].deadline = new Date(deadline);
 
     return response.status(201).send();
   }
@@ -107,13 +111,15 @@ app.patch(
     const { userToken } = request;
     const { id } = request.params;
 
+    const indexOfUser = users.findIndex(user => user.id === userToken.id)
+
     const indexOfToDo = userToken.todos.findIndex((toDo) => toDo.id === id);
 
     if (indexOfToDo === -1) {
       return response.status(404).json({ error: "To-do list not found!" });
     }
 
-    userToken.todos[indexOfToDo].done = true;
+    users[indexOfUser].todos[indexOfToDo].done = true;
 
     return response.status(201).send();
   }
@@ -126,13 +132,15 @@ app.delete(
     const { userToken } = request;
     const { id } = request.params;
 
+    const indexOfUser = users.findIndex(user => user.id === userToken.id)
+
     const toDo = userToken.todos.find((toDo) => toDo.id === id);
 
     if (!toDo) {
       return response.status(404).json({ error: "To-do list not found!" });
     }
 
-    userToken.todos.splice(toDo, 1)
+    users[indexOfUser].todos.splice(toDo, 1)
 
     return response.status(201).send();
   }
